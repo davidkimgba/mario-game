@@ -1,130 +1,112 @@
+
+# import packages
 import turtle
 import random
-#Turtle Setup
-wn = turtle.Screen()
-mario = turtle.Turtle()
-floor = turtle.Turtle()
-turtle.hideturtle()
-turtle.speed(0)
-mario.setheading(0)
-turtle.register_shape("mario.gif")
-mario.shape("mario.gif")
-mario.penup()
-turtle.register_shape("bowser.gif")
-bowser = turtle.Turtle
-#variables
-mario_landing = 300
-mario_initial_velocity = 2
-#Test
-#turtle.screensize(2000000, 20000000)
-#shape = ((10000, -200), (10000, -500), (-10000, -500), (-10000,-200))
-#turtle.register_shape("floor", shape)
-#turtle.clear()
-#floor.setheading(90)
-#floor.fillcolor("white")
-#floor.shape("floor")
-floor.speed(10)
-floor.hideturtle()
-floor.penup()
-floor.goto(-500,-50) # change floor to different value later (x, THIS ONE)
-floor.pendown()
-floor.forward(1000)
+import threading
+import time
+
+
+# move bowser to the beginning of the floor offscreen
+def reset_bowser():
+    bowser.speed(0)
+    bowser.hideturtle()
+    bowser.setpos((wn_width/2)+200, 0)
+    bowser.showturtle()
+
+
+def move_bowser():
+    bowser_speed = random.randint(1,3)
+    bowser.speed(bowser_speed)
+    bowser.setpos(-wn_width/2-200,0)
+
+def reset_move_bowser():
+    reset_bowser()
+    move_bowser()
 
 def go_right():
  mario.shape("mario.gif")
  mario.setheading(0)
  mario.fd(10)
+
 def jump():
-    print(mario.pos())  # for debugging
-    mario.setheading(0)
-    mario_start_x = mario.xcor()
-    mario_start_y = mario.ycor()
-    mario_x = mario.xcor()
-    mario_y = mario.ycor()
+    mario.speed(3)
+    mario.goto(mario_start_x,200)
+    wn.ontimer(mario_floor,400)
 
-    while mario_y <mario_start_y + 50:
-        mario.goto(mario_x+1, mario_y+2)
-        mario_x = mario.xcor()
-        mario_y = mario.ycor()
-    while mario_y < mario_start_y + 80:
-        mario.goto(mario_x + 2, mario_y+ 2)
-        mario_x = mario.xcor()
-        mario_y = mario.ycor()
-    while mario_y < mario_start_y + 100:
-        mario.goto(mario_x+2, mario_y+ 3)
-        mario_x = mario.xcor()
-        mario_y = mario.ycor()
-    while mario_y > mario_start_y + 80:
-         mario.goto(mario_x+2, mario_y -3)
-         mario_x = mario.xcor()
-         mario_y = mario.ycor()
-    while mario_y > mario_start_y + 50:
-        mario.goto(mario_x+1, mario_y - 2)
-        mario_x = mario.xcor()
-        mario_y = mario.ycor()
-    print(mario.pos())  # for debugging
-    while mario_y > mario_start_y:
-        mario.goto(mario_x+1, mario_y - 2)
-        mario_x = mario.xcor()
-        mario_y = mario.ycor()
-def forward():
-    mario.setheading(90)
-    mario.forward(20)
- 
+def mario_floor():
+    mario.goto(mario_start_x,0)
+
+def bowser_thread_entry():
+    count = 0
+    while mario_is_alive:
+        reset_move_bowser()
+        count += 1
+
 def collision():
-    mario.hideturtle()
-    mario.goto(0, -200)
-    mario.showturtle()
-#def recalculate_landing():
-    #mario_landing height(time) = -4.9(16 in feet) t^2 + (velocity)t + current height
+    global mario_is_alive
+    delta_x = abs(mario.xcor()-bowser.xcor())
+    delta_y = abs(mario.ycor()-bowser.ycor()) 
+    print(delta_x, delta_y)
+    if delta_x < 50 and delta_y < 30:
+        mario_is_alive = False
+
+def collision_check():
+    while mario_is_alive:
+        collision()
+        time.sleep(0.01)
+
+mario_is_alive = True
+
+#Turtle Setup
+wn_width=1000
+wn_height=600
+mario_start_x = -wn_width/3
+wn = turtle.Screen()
+wn.setup(width=wn_width, height=wn_height)
+# create characters and stage
+mario = turtle.Turtle()
+mario.setheading(0)
+mario.penup()
+mario.goto(mario_start_x,0)
+
+bowser = turtle.Turtle()
+bowser.setheading(0)
+bowser.penup()
+bowser.speed(0)
+bowser.hideturtle()
+
+floor = turtle.Turtle()
+floor.setheading(0)
+floor.penup()
+
+# change to custom image for the characters
+mario_image = "mario.gif"
+turtle.register_shape(mario_image)
+mario.shape(mario_image)
+
+bowser_image = "bowser.gif"
+turtle.register_shape(bowser_image)
+bowser.shape(bowser_image)
+
+# set up the floor
+floor.speed(0)
+floor.hideturtle()
+floor.penup()
+floor.goto(-1000,-50) # change floor to different value later (x, THIS ONE)
+floor.pendown()
+floor.forward(2000)
+
+collision_thread = threading.Thread(target=collision_check)
+collision_thread.start()
+bowser_thread = threading.Thread(target = bowser_thread_entry)
+bowser_thread.start()
 
 
 
-#screen.ontimer(recalculate_landing, 10)
-#while mario_y > -300:
-     #mario.goto(mario_landing, -300)
-     #while 
-#mario_count = 0
-#while mario_count < 1000:
-#    mario_x = mario.xcor()
-#    mario_y = mario.ycor()
-#    mario.goto(mario_x+1, mario_y+2)
-#    mario_count += 1
 
 
-
-mario.goto(200,400)
-
-bowsers = []
-for i in range(1):
-    bowser = turtle.Turtle()
-    bowser.speed(0)
-    bowser.shape("bowser.gif") #not sure about this line
-    bowser.penup()
-    bowser.goto(0, 40)
-    bowser.speed = random.randint(10, 16)
-    bowsers.append(bowser)
-    while True:
-    #update the screen
-        wn.update()
-        for bowser in bowsers:
-            if (abs(mario.xcor()-bowser.xcor()))<25 and (abs(mario.ycor()-bowser.ycor()))<25:
-                collison()
-            x = bowser.xcor()
-            x-= bowser.speed
-            bowser.setx(x)
- 
-    #respawn of bowser 
-    if x< -250 :
-        y = random.randint(-300, -300)
-        x = random.randint(400, 400)
-        bowser.goto(x,y)
-
-
-
-
-wn.onkeypress(jump, 'space')
-wn.onkeypress(go_right, 'Right')
+wn.onkeypress(jump, "space")
 wn.listen()
+
 wn.mainloop()
     
