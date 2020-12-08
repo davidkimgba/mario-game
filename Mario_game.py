@@ -21,7 +21,9 @@ def move_bowser():
 
 def reset_move_bowser():
     reset_bowser()
+    update_score()
     move_bowser()
+
 
 def go_right():
  mario.shape("mario.gif")
@@ -46,16 +48,46 @@ def collision():
     global mario_is_alive
     delta_x = abs(mario.xcor()-bowser.xcor())
     delta_y = abs(mario.ycor()-bowser.ycor()) 
-    print(delta_x, delta_y)
     if delta_x < 50 and delta_y < 30:
         mario_is_alive = False
+        game_over()
 
 def collision_check():
     while mario_is_alive:
         collision()
         time.sleep(0.01)
 
+def create_floor(color):
+
+    floor.hideturtle()
+    floor.penup()
+    floor.goto(-wn_width/2,-50)
+    floor.pendown()
+    floor.fillcolor(color)
+    floor.begin_fill()
+    floor.goto(-wn_width/2,-wn_height/2)
+    floor.goto(wn_width/2,-wn_height/2)
+    floor.goto(wn_width/2, -50)
+    floor.goto(-wn_width/2,-50)
+    floor.end_fill()
+
+def update_score():
+   global score
+   score_text = "Score: " + str(score)
+   score_writer.clear()
+   score += 1
+   score_writer.write(score_text, font=("Arial", 30, "normal"))
+score = 0
 mario_is_alive = True
+
+def game_over():
+    score_writer.penup()
+    score_writer.clear()
+    score_text = "GAME OVER."
+    score_writer.write(score_text, font=("Arial", 30, "normal"))
+    score_writer.goto(200,100)
+    score_text2 = "Final Score: " + str(score-1)
+    score_writer.write(score_text2, font=("Arial", 30, "normal"))
 
 #Turtle Setup
 wn_width=1000
@@ -63,6 +95,13 @@ wn_height=600
 mario_start_x = -wn_width/3
 wn = turtle.Screen()
 wn.setup(width=wn_width, height=wn_height)
+#score writer setup
+score_writer = turtle.Turtle()
+score_writer.penup()
+score_writer.goto(200,200)
+score_writer.hideturtle()
+score_writer.pendown()
+
 # create characters and stage
 mario = turtle.Turtle()
 mario.setheading(0)
@@ -76,8 +115,10 @@ bowser.speed(0)
 bowser.hideturtle()
 
 floor = turtle.Turtle()
+floor.hideturtle()
 floor.setheading(0)
 floor.penup()
+floor.speed(0)
 
 # change to custom image for the characters
 mario_image = "mario.gif"
@@ -87,14 +128,15 @@ mario.shape(mario_image)
 bowser_image = "bowser.gif"
 turtle.register_shape(bowser_image)
 bowser.shape(bowser_image)
+ground_color= 0 
 
-# set up the floor
-floor.speed(0)
-floor.hideturtle()
-floor.penup()
-floor.goto(-1000,-50) # change floor to different value later (x, THIS ONE)
-floor.pendown()
-floor.forward(2000)
+
+user_color_list = ["red", "green", "blue"]
+while ground_color <1 or ground_color > 3:
+    ground_color = int(input("choose a color: \n 1 for red \t 2 for green \t 3 for blue \n"))
+
+create_floor(user_color_list[ground_color-1])
+
 
 collision_thread = threading.Thread(target=collision_check)
 collision_thread.start()
